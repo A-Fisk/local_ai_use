@@ -93,6 +93,12 @@ def create_chat_interface(
             # Display the response with nice formatting
             print("\nClaude:")
 
+            # display output if enabled 
+            if thinking["type"] == "enabled":
+                print("\nthinking:")
+                console.print(assistant_thinking)
+                print("\nresponding:")
+
             # display response with markdown format
             console.print(Markdown(assistant_message))
 
