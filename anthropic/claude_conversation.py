@@ -2,7 +2,11 @@ import anthropic
 import os
 import textwrap
 from typing import List, Dict, Any, Optional, Union
-from IPython.core.display import display, Markdown
+from rich.console import Console
+from rich.markdown import Markdown
+
+# create console object for printing pretty markdown
+console = Console()
 
 # define model parameters
 model = "claude-3-5-haiku-latest"
@@ -76,8 +80,9 @@ def create_chat_interface(
             # Display the response with nice formatting
             print("\nClaude:")
 
-            # Wrap text for better readability in terminal
-            display(Markdown(assistant_message))
+            # display response with markdown format 
+            console.print(Markdown(assistant_message))
+
 
         except Exception as e:
             print(f"\nAn error occurred: {e}")
@@ -88,3 +93,5 @@ def create_chat_interface(
 
 if __name__ == "__main__":
     message_log = create_chat_interface(model, max_tokens, temperature, system)
+
+    response = message_log[1]['content'][0]['text']
