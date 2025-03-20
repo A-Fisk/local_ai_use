@@ -4,22 +4,24 @@ import textwrap
 from typing import List, Dict, Any, Optional, Union
 from rich.console import Console
 from rich.markdown import Markdown
+import pdb
 
 # create console object for printing pretty markdown
 console = Console()
 
 # define model parameters
-model = "claude-3-5-haiku-latest"
-max_tokens = 1000
+model = "claude-3-7-sonnet-latest"
+max_tokens = 5000
 temperature = 1
 system = (
     "You are a world class mathematician and coder, you are helping to"
     "explain concepts to extremely bright PhD graduates from another"
     "discipline who understand a lot of basic concepts but do not have a "
     "firm grasp on calculus and linear algebra. Please format your output in"
-    "markdown format"
+    "markdown format. Please use the correct english spelling for all outputs,"
+    " such as colour and maths"
 )
-thinking = {"type": "disabled", "budget_tokens": 200}
+thinking = {"type": "enabled", "budget_tokens": 2000}
 
 
 # create function to create chat interface
@@ -35,6 +37,7 @@ def create_chat_interface(
 
     # Store conversation history
     messages: List[Dict[str, Any]] = []
+    thinking_output = []
 
     print("\n=== Claude Chat Interface ===")
     print("Type 'exit' or 'quit' to end the conversation.\n")
@@ -66,8 +69,18 @@ def create_chat_interface(
                 messages=messages,
             )
 
-            # Extract the response text
-            assistant_message = response.content[0].text
+            # capture thinking traces if present
+            if thinking["type"] == "enabled":
+                # Extract the response text
+                assistant_message = response.content[1].text
+
+                # extract thinking
+                assistant_thinking = response.content[0].thinking
+                thinking_output.append(assistant_thinking)
+
+            else:
+                # Extract the response text
+                assistant_message = response.content[0].text
 
             # Add assistant's response to history
             messages.append(
@@ -80,18 +93,20 @@ def create_chat_interface(
             # Display the response with nice formatting
             print("\nClaude:")
 
-            # display response with markdown format 
+            # display response with markdown format
             console.print(Markdown(assistant_message))
-
 
         except Exception as e:
             print(f"\nAn error occurred: {e}")
 
     # return the output so can play with after
-    return messages
+    return messages, thinking_output
 
 
 if __name__ == "__main__":
-    message_log = create_chat_interface(model, max_tokens, temperature, system)
+    message_log, thinking_log = create_chat_interface(
+        model, max_tokens, temperature, system, thinking
+    )
 
-    response = message_log[1]['content'][0]['text']
+    # debugging output 
+    response = message_log[1]["content"][0]["text"]
