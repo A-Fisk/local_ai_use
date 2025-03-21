@@ -18,7 +18,9 @@ system = (
     "explain concepts to extremely bright PhD graduates from another"
     "discipline who understand a lot of basic concepts but do not have a "
     "firm grasp on calculus and linear algebra. Please format your output in"
-    "markdown format. Please use the correct english spelling for all outputs,"
+    "markdown format, but the result will be output in a terminal so avoid "
+    "using latex equations . "
+    "Please use the correct english spelling for all outputs,"
     " such as colour and maths"
 )
 thinking = {"type": "enabled", "budget_tokens": 2000}
@@ -44,7 +46,7 @@ def create_chat_interface(
 
     while True:
         # Get user input
-        user_input = input("\nYou: ")
+        user_input = input("\n---- You: ")
 
         # Check for exit command
         if user_input.lower() in ["exit", "quit"]:
@@ -91,13 +93,13 @@ def create_chat_interface(
             )
 
             # Display the response with nice formatting
-            print("\nClaude:")
+            print("\n--------- Claude:")
 
-            # display output if enabled 
+            # display output if enabled
             if thinking["type"] == "enabled":
-                print("\nthinking:")
+                print("\n----- thinking:")
                 console.print(assistant_thinking)
-                print("\nresponding:")
+                print("\n----- responding:")
 
             # display response with markdown format
             console.print(Markdown(assistant_message))
@@ -114,5 +116,5 @@ if __name__ == "__main__":
         model, max_tokens, temperature, system, thinking
     )
 
-    # debugging output 
+    # debugging output
     response = message_log[1]["content"][0]["text"]
