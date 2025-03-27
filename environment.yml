@@ -8,3 +8,5 @@ dependencies:
     - black
     - ipython
     - rich
+    - notedown
+    - jupyter
