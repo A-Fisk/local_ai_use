@@ -11,7 +11,7 @@ console = Console()
 
 # define model parameters
 model = "claude-3-7-sonnet-latest"
-max_tokens = 5000
+max_tokens = 20000
 temperature = 1
 system = (
     "You are a world class mathematician and coder, you are helping to"

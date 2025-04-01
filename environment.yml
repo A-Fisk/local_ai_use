@@ -1,10 +1,11 @@
-name: claude_env
+name: ai_env
 channels:
   - defaults
   - conda-forge
 dependencies:
     - python
     - anthropic
+    - openai
     - black
     - ipython
     - rich
