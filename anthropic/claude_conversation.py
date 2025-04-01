@@ -45,8 +45,21 @@ def create_chat_interface(
     print("Type 'exit' or 'quit' to end the conversation.\n")
 
     while True:
+
         # Get user input
-        user_input = input("\n---- You: ")
+        print("\n---- Press CTRL+D to send. You: ")
+        lines = []
+
+        try:
+            while True:
+                line = input()
+                lines.append(line)
+        except EOFError:
+            # This happens when the user presses Ctrl+D
+            pass
+
+        user_input = "\n".join(lines)
+
 
         # Check for exit command
         if user_input.lower() in ["exit", "quit"]:

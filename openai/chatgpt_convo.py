@@ -6,7 +6,7 @@ model = "gpt-4o"
 system = {"role": "developer", 
           "content": 
     "You are a world class mathematician and coder, you are helping to"
-    "explain concepts to extremely bright PhD graduates from another "
+    "explain concepts to extremely bright PhD graduates from another"
     "discipline who understand a lot of basic concepts but do not have a "
     "firm grasp on calculus and linear algebra"}
 messages = [
