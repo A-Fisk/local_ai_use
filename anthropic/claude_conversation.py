@@ -43,17 +43,20 @@ def create_chat_interface(
     # Store conversation history
     messages: List[Dict[str, Any]] = []
     thinking_output = []
+    conversation_title = None
 
     print("\n=== Claude Chat Interface ===")
     print("Type 'exit' or 'quit' to end the conversation.\n")
 
+    # Display the current system prompt
+    print("Current system prompt:")
+    print(system)
+
     # Ask if user wants to modify the system prompt
     modify_prompt = input(
-        "Would you like to modify the system prompt? (yes/no): "
+        "\nWould you like to modify the system prompt? (yes/no): "
     ).lower()
     if modify_prompt in ["yes", "y"]:
-        print("\nCurrent system prompt:")
-        print(system)
         print(
             "\n---- Enter your modified system prompt. Press CTRL+D to send:"
         )
@@ -92,6 +95,8 @@ def create_chat_interface(
         # Check for exit command
         if user_input.lower() in ["exit", "quit"]:
             print("\nEnding conversation. Goodbye!")
+            # Store the user input before quitting to use later
+            exit_input = user_input
             break
 
         # Add user message to history
@@ -148,11 +153,16 @@ def create_chat_interface(
         except Exception as e:
             print(f"\nAn error occurred: {e}")
 
+    # Ask for a title for the conversation log
+    print("\nPlease provide a title for this conversation log: ")
+    title_input = input().strip()
+    conversation_title = title_input if title_input else None
+
     # return the output so can play with after
-    return messages, thinking_output
+    return messages, thinking_output, conversation_title
 
 
-def save_conversation_log(messages, thinking_log, system, model):
+def save_conversation_log(messages, thinking_log, system, model, title=None):
     """Save the conversation to a log file in the local_ai_use/logs directory."""
     # Determine the base project directory (local_ai_use) no matter where script is run from
     current_path = Path(os.path.abspath(__file__))
@@ -181,15 +191,18 @@ def save_conversation_log(messages, thinking_log, system, model):
     model_name = model.split("-")[0:3]
     model_name = "-".join(model_name)
 
-    # Extract the first user message and get just the first three words
+    # Use the title if provided, otherwise extract the first three words from first user message
     first_user_msg = ""
-    for msg in messages:
-        if msg["role"] == "user":
-            # Get first three words from the message
-            words = msg["content"][0]["text"].split()
-            first_three = words[:3] if len(words) >= 3 else words
-            first_user_msg = "_".join(first_three)
-            break
+    if title:
+        first_user_msg = title
+    else:
+        for msg in messages:
+            if msg["role"] == "user":
+                # Get first three words from the message
+                words = msg["content"][0]["text"].split()
+                first_three = words[:3] if len(words) >= 3 else words
+                first_user_msg = "_".join(first_three)
+                break
 
     # Count the number of message exchanges (an exchange is a user message followed by an assistant response)
     num_exchanges = len([msg for msg in messages if msg["role"] == "user"])
@@ -220,14 +233,14 @@ def save_conversation_log(messages, thinking_log, system, model):
 
 
 if __name__ == "__main__":
-    message_log, thinking_log = create_chat_interface(
+    message_log, thinking_log, conversation_title = create_chat_interface(
         model, max_tokens, temperature, system, thinking
     )
 
     # Save the conversation log
     if message_log:
         log_path = save_conversation_log(
-            message_log, thinking_log, system, model
+            message_log, thinking_log, system, model, conversation_title
         )
         print(f"\nConversation saved to: {log_path}")
 
