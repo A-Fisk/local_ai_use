@@ -44,6 +44,32 @@ def create_chat_interface(
     print("\n=== Claude Chat Interface ===")
     print("Type 'exit' or 'quit' to end the conversation.\n")
 
+    # Ask if user wants to modify the system prompt
+    modify_prompt = input(
+        "Would you like to modify the system prompt? (yes/no): "
+    ).lower()
+    if modify_prompt in ["yes", "y"]:
+        print("\nCurrent system prompt:")
+        print(system)
+        print(
+            "\n---- Enter your modified system prompt. Press CTRL+D to send:"
+        )
+
+        lines = []
+        try:
+            while True:
+                line = input()
+                lines.append(line)
+        except EOFError:
+            pass
+
+        new_system = "\n".join(lines)
+        if new_system.strip():  # Only update if not empty
+            system = new_system
+            print("\nSystem prompt updated.")
+        else:
+            print("\nSystem prompt unchanged.")
+
     while True:
 
         # Get user input
@@ -59,7 +85,6 @@ def create_chat_interface(
             pass
 
         user_input = "\n".join(lines)
-
 
         # Check for exit command
         if user_input.lower() in ["exit", "quit"]:
