@@ -1,6 +1,9 @@
 import anthropic
 import os
 import textwrap
+import json
+import datetime
+from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 from rich.console import Console
 from rich.markdown import Markdown
@@ -149,10 +152,85 @@ def create_chat_interface(
     return messages, thinking_output
 
 
+def save_conversation_log(messages, thinking_log, system, model):
+    """Save the conversation to a log file in the local_ai_use/logs directory."""
+    # Determine the base project directory (local_ai_use) no matter where script is run from
+    current_path = Path(os.path.abspath(__file__))
+    # Navigate to the project root directory
+    while (
+        current_path.name != "local_ai_use"
+        and current_path.parent != current_path
+    ):
+        current_path = current_path.parent
+
+    # If we couldn't find "local_ai_use" directory, default to current directory
+    if current_path.name != "local_ai_use":
+        current_path = Path.cwd()
+        print(
+            f"Warning: 'local_ai_use' directory not found. Using current directory: {current_path}"
+        )
+
+    # Create logs directory in the project root
+    logs_dir = current_path / "logs"
+    logs_dir.mkdir(exist_ok=True)
+
+    # Create a timestamp for the filename
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    # Extract model name for the filename (remove version details)
+    model_name = model.split("-")[0:3]
+    model_name = "-".join(model_name)
+
+    # Extract the first user message and get just the first three words
+    first_user_msg = ""
+    for msg in messages:
+        if msg["role"] == "user":
+            # Get first three words from the message
+            words = msg["content"][0]["text"].split()
+            first_three = words[:3] if len(words) >= 3 else words
+            first_user_msg = "_".join(first_three)
+            break
+
+    # Count the number of message exchanges (an exchange is a user message followed by an assistant response)
+    num_exchanges = len([msg for msg in messages if msg["role"] == "user"])
+
+    # Create a filename with the timestamp, model name, first three words, and conversation length
+    sanitized_title = "".join(
+        c if c.isalnum() or c in "_-" else "_" for c in first_user_msg
+    )
+    filename = (
+        f"{timestamp}_{model_name}_{sanitized_title}_{num_exchanges}msgs.json"
+    )
+    log_path = logs_dir / filename
+
+    # Create the log data
+    log_data = {
+        "timestamp": timestamp,
+        "model": model,
+        "system": system,
+        "messages": messages,
+        "thinking": thinking_log if thinking_log else [],
+    }
+
+    # Save to file
+    with open(log_path, "w", encoding="utf-8") as f:
+        json.dump(log_data, f, indent=2, ensure_ascii=False)
+
+    return log_path
+
+
 if __name__ == "__main__":
     message_log, thinking_log = create_chat_interface(
         model, max_tokens, temperature, system, thinking
     )
 
+    # Save the conversation log
+    if message_log:
+        log_path = save_conversation_log(
+            message_log, thinking_log, system, model
+        )
+        print(f"\nConversation saved to: {log_path}")
+
     # debugging output
-    response = message_log[1]["content"][0]["text"]
+    if message_log and len(message_log) > 1:
+        response = message_log[1]["content"][0]["text"]
